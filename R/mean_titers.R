@@ -8,6 +8,7 @@
 #' @param sd By setting this you can fix the standard deviation assumed when finding 
 #'   parameters for the normal distribution when using the "truncated_normal" approach
 #' @param dilution_stepsize The dilution stepsize used in the assay, see `calc_titer_lims()`
+#' @param options A named list of options to pass to `titer_fit_options()`
 #'
 #' @export
 mean_titers <- function(
@@ -15,7 +16,8 @@ mean_titers <- function(
   method,
   level = 0.95,
   sd = NA,
-  dilution_stepsize
+  dilution_stepsize,
+  options = list()
 ) {
   
   # Remove NA titers
@@ -40,7 +42,8 @@ mean_titers <- function(
       titers = titers, 
       level = level, 
       dilution_stepsize = dilution_stepsize,
-      sd = sd
+      sd = sd,
+      options = options
     )
   )
   
@@ -108,11 +111,17 @@ mean_titers_truncated_normal <- function(
   titers,
   level = 0.95,
   dilution_stepsize,
-  sd = NA
+  sd = NA,
+  options = list()
 ) {
   
   # Get the titer limits
-  titerlims <- calc_titer_lims(titers, dilution_stepsize)
+  titerlims <- calc_titer_lims(
+    titers = titers,
+    dilution_stepsize = dilution_stepsize,
+    options = options
+  )
+  
   if (is.na(sd)) {
     
     start_pars <- list(

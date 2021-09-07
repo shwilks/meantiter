@@ -4,7 +4,14 @@
 \alias{mean_titers}
 \title{Calculate the geometric mean titer of a set of titers}
 \usage{
-mean_titers(titers, method, level = 0.95, sd = NA, dilution_stepsize)
+mean_titers(
+  titers,
+  method,
+  level = 0.95,
+  sd = NA,
+  dilution_stepsize,
+  options = list()
+)
 }
 \arguments{
 \item{titers}{A vector of titers}
@@ -18,6 +25,8 @@ mean_titers(titers, method, level = 0.95, sd = NA, dilution_stepsize)
 parameters for the normal distribution when using the "truncated_normal" approach}
 
 \item{dilution_stepsize}{The dilution stepsize used in the assay, see `calc_titer_lims()`}
+
+\item{options}{A named list of options to pass to `titer_fit_options()`}
 }
 \description{
 Calculate the geometric mean titer of a set of titers
