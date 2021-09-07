@@ -11,7 +11,10 @@ Description: A package providing wrapper functions for calculating geometric mea
   not recommended are excludion of non-detectable titers and replacement of non-detectable titers 
   with the maximum possible value.
 License: AGPL (>= 3)
-Imports: Rcpp (>= 1.0.6)
+Imports: 
+  fitdistrplus,
+  Hmisc,
+  Rcpp (>= 1.0.6)
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0)

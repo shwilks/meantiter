@@ -9,28 +9,31 @@ calc_titer_lims(titers, dilution_stepsize, options = list())
 \arguments{
 \item{titers}{A numeric/character vector or matrix of titer measurements.}
 
-\item{fit_opts}{A list of fitting options (see details).}
+\item{dilution_stepsize}{The dilution stepsize, see details}
+
+\item{options}{A named list of options to pass to `titer_fit_options()`}
 }
 \value{
-Returns a list of length two with values max_titers and min_titers, giving the
-numeric vectors of the upper and lower bounds of the titers on the log scale.
+Returns a list of length three with values log_titers, max_titers and min_titers, giving the
+numeric vectors of the straight log converted, upper and lower bounds of the titers on the log scale.
 }
 \description{
 Function for getting upper and lower limits of measured titers on the log scale.
 }
 \details{
-This function assumes that HI measurements were performed in 2-fold dilution
-steps and converts them to the log scale using the formula:
-\deqn{a + b}
-Hence an HI titer of 20, which would convert to 1 via the transformation above, would be
-assumed to have upper and lower limits of 1.5 and 0.5 respectively.
-
-In the case of non-detectable titers, such as <10, the lower bound of the measured value
-is taken from the parameter \code{min_titer_possible}, defaulting to the value found from
-a call to \code{get_lndscp_fit_defaults()}. For a greater than value, i.e. >1280, the
-upper bound of the value is taken from the parameter \code{max_titer_possible}. You can
-set different defaults by passing them as named arguments to the list, as shown in the
-examples.
+HI titers which typically follow a 2-fold dilution series starting
+  from 1/10, then 1/20, 1/40 etc. This represents a "dilution stepsize" of 1
+  when converted to the log2 scale. When no inhibition was recorded at the
+  highest dilution, the value is typically recorded as <10 but the
+  optimization regime effectively treats this as a <=5, the rationale being
+  that, had the dilution series been continued to higher concentrations, the
+  next lowest titer would have been a 5. Over time the method has also been
+  applied to other neutralization assays that sometimes have a continuous
+  read out with a lower end, in these cases a <10 really means a <10 since
+  any other values like 9.8 or 7.62 would also be possible. To indicate these
+  continuous cases, you can specify the dilution stepsize as 0. Equally, if
+  the dilution regime followed a different pattern, you can also set that
+  here.
 }
 \examples{
 # Calculate the titer limits of a set of HI titers
@@ -39,6 +42,6 @@ titer_lims <- get_titer_lims(titers = c("20", "320", "<10", ">1280"))
 # Calculate the titer limits assuming non-default upper and lower bounds for non-detectable
 # and greater-than titers.
 titer_lims <- get_titer_lims(titers = c("20", "320", "<10", ">1280"),
-                             fit_opts = list(min_titer_possible = -Inf,
-                                             max_titer_possible = 14))
+                             options = list(min_titer_possible = -Inf,
+                                            max_titer_possible = 14))
 }
