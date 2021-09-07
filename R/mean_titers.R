@@ -14,12 +14,6 @@ mean_titers <- function(
   
   switch(
     method,
-    "maxlikelihood" = mean_titers_maxlikelihood(
-      titers = titers, 
-      level = level, 
-      dilution_stepsize = dilution_stepsize,
-      sd = sd
-    ),
     "replace_nd" = mean_titers_replace_nd(
       titers = titers, 
       level = level, 
@@ -39,78 +33,6 @@ mean_titers <- function(
       sd = sd
     )
   )
-  
-}
-
-
-
-mean_titers_maxlikelihood <- function(
-  titers,
-  level = 0.95,
-  dilution_stepsize,
-  sd = NA
-) {
-  
-  # Get the titer limits
-  titerlims <- calc_titer_lims(titers, dilution_stepsize)
-  
-  # Assign starting parameters
-  start_mean <- mean(titerlims$log_titers)
-  start_sd   <- sd(titerlims$log_titers)
-  
-  # Calculate the titer likelihood
-  result <- nlminb(
-    start = c(start_mean, start_sd),
-    objective = calc_mean_titer_negll_by_par,
-    max_titers = titerlims$max_titers,
-    min_titers = titerlims$min_titers,
-    titer_sd = NA,
-    upper = c(Inf, Inf),
-    lower = c(-Inf, 0.01)
-  )
-  
-  if (is.na(level)) {
-    
-    list(
-      mean = result$par[1],
-      sd = result$par[2],
-      mean_lower = NA,
-      mean_upper = NA
-    )
-    
-  } else {
-    
-    lower_ci_result <- nlminb(
-      start = c(result$par[1] - 0.01, result$par[2]),
-      objective = calc_mean_titer_ci_by_par,
-      max_titers = titerlims$max_titers,
-      min_titers = titerlims$min_titers,
-      titer_sd = NA,
-      upper = c(result$par[1], Inf),
-      lower = c(-Inf, 0.01),
-      target_negll = result$objective + qchisq(level, 1)/2
-    )
-
-    upper_ci_result <- nlminb(
-      start = c(result$par[1] + 0.01, result$par[2]),
-      objective = calc_mean_titer_ci_by_par,
-      max_titers = titerlims$max_titers,
-      min_titers = titerlims$min_titers,
-      titer_sd = NA,
-      upper = c(Inf, Inf),
-      lower = c(result$par[1], 0.01),
-      target_negll = result$objective + qchisq(level, 1)/2
-    )
-    
-    list(
-      mean = result$par[1],
-      sd = result$par[2],
-      mean_lower = lower_ci_result$par[1],
-      mean_upper = upper_ci_result$par[1]
-    )
-    
-  }
-  
   
 }
 

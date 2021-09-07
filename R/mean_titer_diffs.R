@@ -15,83 +15,10 @@ mean_titer_diffs <- function(
   
   switch(
     method,
-    "maxlikelihood" = mean_titer_diffs_maxlikelihood(titers1, titers2, level, dilution_stepsize),
     "replace_nd" = mean_titer_diffs_replace_nd(titers1, titers2, level, dilution_stepsize),
     "exclude_nd" = mean_titer_diffs_exclude_nd(titers1, titers2, level, dilution_stepsize),
     "truncated_normal" = mean_titer_diffs_truncated_normal(titers1, titers2, level, dilution_stepsize)
   )
-  
-}
-
-
-
-mean_titer_diffs_maxlikelihood <- function(
-  titers1,
-  titers2,
-  level = 0.95,
-  dilution_stepsize
-) {
-  
-  # Get the titer limits
-  titerlims <- calc_titer_diff_lims(titers1, titers2, dilution_stepsize)
-  
-  # Assign starting parameters
-  start_mean <- mean(titerlims$logtiter_diffs)
-  start_sd   <- sd(titerlims$logtiter_diffs)
-  
-  # Calculate the titer likelihood
-  result <- nlminb(
-    start = c(start_mean, start_sd),
-    objective = calc_mean_titer_negll_by_par,
-    max_titers = titerlims$max_diffs,
-    min_titers = titerlims$min_diffs,
-    titer_sd = NA,
-    upper = c(Inf, Inf),
-    lower = c(-Inf, 0.01)
-  )
-  
-  if (is.na(level)) {
-    
-    list(
-      mean = result$par[1],
-      sd = result$par[2],
-      mean_lower = NA,
-      mean_upper = NA
-    )
-    
-  } else {
-    
-    lower_ci_result <- nlminb(
-      start = c(result$par[1] - 0.01, result$par[2]),
-      objective = calc_mean_titer_ci_by_par,
-      max_titers = titerlims$max_diffs,
-      min_titers = titerlims$min_diffs,
-      titer_sd = NA,
-      upper = c(result$par[1], Inf),
-      lower = c(-Inf, 0.01),
-      target_negll = result$objective + qchisq(level, 1)/2
-    )
-    
-    upper_ci_result <- nlminb(
-      start = c(result$par[1] + 0.01, result$par[2]),
-      objective = calc_mean_titer_ci_by_par,
-      max_titers = titerlims$max_diffs,
-      min_titers = titerlims$min_diffs,
-      titer_sd = NA,
-      upper = c(Inf, Inf),
-      lower = c(result$par[1], 0.01),
-      target_negll = result$objective + qchisq(level, 1)/2
-    )
-    
-    list(
-      mean_diff = result$par[1],
-      sd = result$par[2],
-      mean_diff_lower = lower_ci_result$par[1],
-      mean_diff_upper = upper_ci_result$par[1]
-    )
-    
-  }
-  
   
 }
 
@@ -127,7 +54,6 @@ mean_titer_diffs_replace_nd <- function(
 }
 
 
-
 mean_titer_diffs_exclude_nd <- function(
   titers1,
   titers2,
@@ -150,7 +76,6 @@ mean_titer_diffs_exclude_nd <- function(
   )
   
 }
-
 
 
 mean_titer_diffs_truncated_normal <- function(
