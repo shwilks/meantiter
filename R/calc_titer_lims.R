@@ -82,18 +82,7 @@ calc_titer_lims <- function(
 }
 
 
-#' Calculate the mean difference between two paired sets of titers
-#' 
-#' This function is useful for example for calculating differences where you have a set of 
-#' pre-vaccination and post-vaccination samples and you would like to know the mean response 
-#' size, accounting for non-detectable values.
-#'
-#' @param titers1 The first titerset from which to calculate the mean difference
-#' @param titers2 The second titerset to which to calculate the mean difference
-#' @param dilution_stepsize The dilution stepsize used in the assay, see `calc_titer_lims()`
-#' @param options A named list of options to pass to `titer_fit_options()`
-#'
-#' @export
+
 calc_titer_diff_lims <- function(
   titers1,
   titers2,

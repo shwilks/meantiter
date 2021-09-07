@@ -1,4 +1,14 @@
 
+#' Calculate the geometric mean titer of a set of titers
+#'
+#' @param titers A vector of titers
+#' @param method The method to use when dealing with censored titers (like
+#'   `<10`), one of "replace_nd", "exclude_nd", "truncated_normal"
+#' @param level The confidence level to use when calculating confidence intervals
+#' @param sd By setting this you can fix the standard deviation assumed when finding 
+#'   parameters for the normal distribution when using the "truncated_normal" approach
+#' @param dilution_stepsize The dilution stepsize used in the assay, see `calc_titer_lims()`
+#'
 #' @export
 mean_titers <- function(
   titers, 
