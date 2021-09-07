@@ -1,14 +1,17 @@
 Package: meantiter
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
+Title: Calculate GMTs using different approaches for handling nd titers
+Version: 0.0.0.9000
 Date: 2021-07-05
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: S. H. Wilks
+Maintainer: S. H. Wilks <sw463@cam.ac.uk>
+Description: A package providing wrapper functions for calculating geometric mean titers using 
+  different approaches for non-detectable titers, in particular a non-biased maximum likelihood 
+  approach based on estimating parameters of a truncated normal distribution. Also included but 
+  not recommended are excludion of non-detectable titers and replacement of non-detectable titers 
+  with the maximum possible value.
+License: AGPL (>= 3)
 Imports: Rcpp (>= 1.0.6)
-LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0)
