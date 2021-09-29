@@ -26,6 +26,38 @@ mean_titer_diffs <- function(
   titers1 <- titers1[!na_titers]
   titers2 <- titers2[!na_titers]
   
+  # If length titers = 1 just return the titer or NA if thresholded
+  if (length(titers1) == 0) {
+    return(
+      list(
+        mean_diff = NA,
+        sd = NA,
+        mean_diff_lower = NA,
+        mean_diff_upper = NA
+      )
+    )
+  } else if (length(titers1) == 1 && length(titers2) == 1) {
+    if (grepl("<|>|\\*", titers1) || grepl("<|>|\\*", titers2)) {
+      return(
+        list(
+          mean_diff = NA,
+          sd = NA,
+          mean_diff_lower = NA,
+          mean_diff_upper = NA
+        )
+      )
+    } else {
+      return(
+        list(
+          mean_diff = log2(as.numeric(titers2) / 10) - log2(as.numeric(titers1) / 10),
+          sd = NA,
+          mean_diff_lower = NA,
+          mean_diff_upper = NA
+        )
+      )
+    }
+  }
+  
   switch(
     method,
     "replace_nd" = mean_titer_diffs_replace_nd(titers1, titers2, level, dilution_stepsize),
