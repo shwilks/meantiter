@@ -37,11 +37,20 @@ HI titers which typically follow a 2-fold dilution series starting
 }
 \examples{
 # Calculate the titer limits of a set of HI titers
-titer_lims <- get_titer_lims(titers = c("20", "320", "<10", ">1280"))
+titer_lims <- calc_titer_lims(
+  titers = c("20", "320", "<10", ">1280"),
+  dilution_stepsize = 1
+)
 
 # Calculate the titer limits assuming non-default upper and lower bounds for non-detectable
 # and greater-than titers.
-titer_lims <- get_titer_lims(titers = c("20", "320", "<10", ">1280"),
-                             options = list(min_titer_possible = -Inf,
-                                            max_titer_possible = 14))
+titer_lims <- calc_titer_lims(
+  titers = c("20", "320", "<10", ">1280"),
+  dilution_stepsize = 1,
+  options = list(
+    min_titer_possible = -Inf,
+    max_titer_possible = 14
+  )
+)
+
 }
