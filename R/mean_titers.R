@@ -24,6 +24,38 @@ mean_titers <- function(
   na_titers <- is.na(titers) | titers == "*"
   titers <- titers[!na_titers]
   
+  # If length titers = 1 just return the titer or NA if thresholded
+  if (length(titers) == 0) {
+    return(
+      list(
+        mean = NA,
+        sd = NA,
+        mean_lower = NA,
+        mean_upper = NA
+      )
+    )
+  } else if (length(unique(titers)) == 1) {
+    if (grepl("<|>|\\*", titers[1])) {
+      return(
+        list(
+          mean = NA,
+          sd = NA,
+          mean_lower = NA,
+          mean_upper = NA
+        )
+      )
+    } else {
+      return(
+        list(
+          mean = log2(as.numeric(titers[1]) / 10),
+          sd = NA,
+          mean_lower = NA,
+          mean_upper = NA
+        )
+      )
+    }
+  }
+  
   switch(
     method,
     "replace_nd" = mean_titers_replace_nd(
