@@ -1,8 +1,8 @@
 
 #' Calculate the mean difference between two paired sets of titers
-#' 
-#' This function is useful for example for calculating differences where you have a set of 
-#' pre-vaccination and post-vaccination samples and you would like to know the mean response 
+#'
+#' This function is useful for example for calculating differences where you have a set of
+#' pre-vaccination and post-vaccination samples and you would like to know the mean response
 #' size, accounting for non-detectable values.
 #'
 #' @param titers1 The first titerset from which to calculate the mean difference
@@ -14,18 +14,18 @@
 #'
 #' @export
 mean_titer_diffs <- function(
-  titers1, 
+  titers1,
   titers2,
   method,
   level = 0.95,
   dilution_stepsize
 ) {
-  
+
   # Remove NA titers
   na_titers <- is.na(titers1) | titers1 == "*" | is.na(titers2) | titers2 == "*"
   titers1 <- titers1[!na_titers]
   titers2 <- titers2[!na_titers]
-  
+
   # If length titers = 1 just return the titer or NA if thresholded
   if (length(titers1) == 0) {
     return(
@@ -57,14 +57,14 @@ mean_titer_diffs <- function(
       )
     }
   }
-  
+
   switch(
     method,
     "replace_nd" = mean_titer_diffs_replace_nd(titers1, titers2, level, dilution_stepsize),
     "exclude_nd" = mean_titer_diffs_exclude_nd(titers1, titers2, level, dilution_stepsize),
     "truncated_normal" = mean_titer_diffs_truncated_normal(titers1, titers2, level, dilution_stepsize)
   )
-  
+
 }
 
 
@@ -74,20 +74,35 @@ mean_titer_diffs_replace_nd <- function(
   level = 0.95,
   dilution_stepsize
 ) {
-  
-  lessthans <- substr(titers, 1, 1) == "<"
-  morethans <- substr(titers, 1, 1) == ">"
-  
-  titers[lessthans | morethans] <- substr(
-    x = titers[lessthans | morethans], 
-    start = 2, 
-    stop = nchar(titers[lessthans | morethans])
+
+  lessthans1 <- substr(titers1, 1, 1) == "<"
+  morethans1 <- substr(titers1, 1, 1) == ">"
+
+  titers1[lessthans1 | morethans1] <- substr(
+    x = titers1[lessthans1 | morethans1],
+    start = 2,
+    stop = nchar(titers1[lessthans1 | morethans1])
   )
-  
-  logtiters <- log2(as.numeric(titers) / 10)
-  logtiters[lessthans] <- logtiters[lessthans] - dilution_stepsize
-  logtiters[morethans] <- logtiters[morethans] + dilution_stepsize
-  
+
+  logtiters1 <- log2(as.numeric(titers1) / 10)
+  logtiters1[lessthans1] <- logtiters1[lessthans1] - dilution_stepsize
+  logtiters1[morethans1] <- logtiters1[morethans1] + dilution_stepsize
+
+  lessthans2 <- substr(titers2, 1, 1) == "<"
+  morethans2 <- substr(titers2, 1, 1) == ">"
+
+  titers2[lessthans2 | morethans2] <- substr(
+    x = titers2[lessthans2 | morethans2],
+    start = 2,
+    stop = nchar(titers2[lessthans2 | morethans2])
+  )
+
+  logtiters2 <- log2(as.numeric(titers2) / 10)
+  logtiters2[lessthans2] <- logtiters2[lessthans2] - dilution_stepsize
+  logtiters2[morethans2] <- logtiters2[morethans2] + dilution_stepsize
+
+  logtiters <- logtiters1 - logtiters2
+
   result <- Hmisc::smean.cl.normal(logtiters, conf.int = level)
   list(
     mean_diff = unname(result["Mean"]),
@@ -95,7 +110,7 @@ mean_titer_diffs_replace_nd <- function(
     mean_diff_lower = unname(result["Lower"]),
     mean_diff_upper = unname(result["Upper"])
   )
-  
+
 }
 
 
@@ -105,13 +120,21 @@ mean_titer_diffs_exclude_nd <- function(
   level = 0.95,
   dilution_stepsize
 ) {
-  
-  lessthans <- substr(titers, 1, 1) == "<"
-  morethans <- substr(titers, 1, 1) == ">"
-  titers <- titers[!lessthans & !morethans]
-  
-  logtiters <- log2(as.numeric(titers) / 10)
-  
+
+  lessthans1 <- substr(titers1, 1, 1) == "<"
+  morethans1 <- substr(titers1, 1, 1) == ">"
+  titers1 <- titers1[!lessthans1 & !morethans1]
+
+  logtiters1 <- log2(as.numeric(titers1) / 10)
+
+  lessthans2 <- substr(titers2, 1, 1) == "<"
+  morethans2 <- substr(titers2, 1, 1) == ">"
+  titers2 <- titers2[!lessthans2 & !morethans2]
+
+  logtiters2 <- log2(as.numeric(titers2) / 10)
+
+  logtiters <- logtiters1 - logtiters2
+
   result <- Hmisc::smean.cl.normal(logtiters, conf.int = level)
   list(
     mean_diff = result[["Mean"]],
@@ -119,7 +142,7 @@ mean_titer_diffs_exclude_nd <- function(
     mean_diff_lower = result[["Lower"]],
     mean_diff_upper = result[["Upper"]]
   )
-  
+
 }
 
 
@@ -129,14 +152,14 @@ mean_titer_diffs_truncated_normal <- function(
   level = 0.95,
   dilution_stepsize
 ) {
-  
+
   # Get the titer limits
   titerlims <- calc_titer_diff_lims(
-    titers1, 
-    titers2, 
+    titers1,
+    titers2,
     dilution_stepsize
   )
-  
+
   # Setup output
   output <- list(
     mean_diff = NA,
@@ -144,9 +167,9 @@ mean_titer_diffs_truncated_normal <- function(
     mean_diff_lower = NA,
     mean_diff_upper = NA
   )
-  
+
   try({
-    
+
     out <- capture.output({
       result <- fitdistrplus::fitdistcens(
         censdata = data.frame(
@@ -158,11 +181,11 @@ mean_titer_diffs_truncated_normal <- function(
           sd = sd(titerlims$logtiter_diffs)
         ),
         distr = "norm",
-        
+
       )
-      
+
       result_ci <- confint(result, level = level)
-      
+
       output <- list(
         mean_diff = result$estimate[["mean"]],
         sd = result$estimate[["sd"]],
@@ -170,11 +193,11 @@ mean_titer_diffs_truncated_normal <- function(
         mean_diff_upper = result_ci["mean", 2]
       )
     })
-    
+
   }, silent = TRUE)
-  
+
   # Return output
   output
-  
+
 }
 
