@@ -22,7 +22,7 @@ mean_titer_diffs <- function(
 ) {
   
   # Remove NA titers
-  na_titers <- is.na(titers1) | titers1 == "*" | is.na(titers2) | titers2 == "*"
+  na_titers <- is.na(titers1) | titers1 == "*" | titers1 == "." | is.na(titers2) | titers2 == "*" | titers2 == "."
   titers1 <- titers1[!na_titers]
   titers2 <- titers2[!na_titers]
   
@@ -33,17 +33,21 @@ mean_titer_diffs <- function(
         mean_diff = NA,
         sd = NA,
         mean_diff_lower = NA,
-        mean_diff_upper = NA
+        mean_diff_upper = NA,
+        mean_var = NA,
+        sd_var = NA
       )
     )
   } else if (length(titers1) == 1 && length(titers2) == 1) {
-    if (grepl("<|>|\\*", titers1) || grepl("<|>|\\*", titers2)) {
+    if (grepl("<|>", titers1) || titers1 == "*" || titers1 == "." || grepl("<|>", titers2) || titers2 == "*" || titers2 == ".") {
       return(
         list(
           mean_diff = NA,
           sd = NA,
           mean_diff_lower = NA,
-          mean_diff_upper = NA
+          mean_diff_upper = NA,
+          mean_var = NA,
+          sd_var = NA
         )
       )
     } else {
@@ -52,7 +56,9 @@ mean_titer_diffs <- function(
           mean_diff = log2(as.numeric(titers2) / 10) - log2(as.numeric(titers1) / 10),
           sd = NA,
           mean_diff_lower = NA,
-          mean_diff_upper = NA
+          mean_diff_upper = NA,
+          mean_var = NA,
+          sd_var = NA
         )
       )
     }
@@ -93,7 +99,9 @@ mean_titer_diffs_replace_nd <- function(
     mean_diff = unname(result["Mean"]),
     sd = sd(logtiters),
     mean_diff_lower = unname(result["Lower"]),
-    mean_diff_upper = unname(result["Upper"])
+    mean_diff_upper = unname(result["Upper"]),
+    mean_var = NA,
+    sd_var = NA
   )
   
 }
@@ -117,7 +125,9 @@ mean_titer_diffs_exclude_nd <- function(
     mean_diff = result[["Mean"]],
     sd = sd(logtiters),
     mean_diff_lower = result[["Lower"]],
-    mean_diff_upper = result[["Upper"]]
+    mean_diff_upper = result[["Upper"]],
+    mean_var = NA,
+    sd_var = NA
   )
   
 }
@@ -142,7 +152,9 @@ mean_titer_diffs_truncated_normal <- function(
     mean_diff = NA,
     sd = NA,
     mean_diff_lower = NA,
-    mean_diff_upper = NA
+    mean_diff_upper = NA,
+    mean_var = NA,
+    sd_var = NA
   )
   
   try({
@@ -167,7 +179,9 @@ mean_titer_diffs_truncated_normal <- function(
         mean_diff = result$estimate[["mean"]],
         sd = result$estimate[["sd"]],
         mean_diff_lower = result_ci["mean", 1],
-        mean_diff_upper = result_ci["mean", 2]
+        mean_diff_upper = result_ci["mean", 2],
+        mean_var = result$vcov[1, 1],
+        sd_var = result$vcov[2, 2]
       )
     })
     

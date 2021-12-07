@@ -17,11 +17,15 @@ mean_titers <- function(
   level = 0.95,
   sd = NA,
   dilution_stepsize,
+  prior_mean_mean = 0,
+  prior_mean_sd = 100,
+  prior_sd_shape = 3,
+  prior_sd_scale = 1/4,
   options = list()
 ) {
   
   # Remove NA titers
-  na_titers <- is.na(titers) | titers == "*"
+  na_titers <- is.na(titers) | titers == "*" | titers == "."
   titers <- titers[!na_titers]
   
   # If length titers = 1 just return the titer or NA if thresholded
@@ -35,7 +39,7 @@ mean_titers <- function(
       )
     )
   } else if (length(unique(titers)) == 1) {
-    if (grepl("<|>|\\*", titers[1])) {
+    if (grepl("<|>", titers[1]) || titers[1] == "*" || titers[1] == ".") {
       return(
         list(
           mean = NA,
@@ -75,6 +79,16 @@ mean_titers <- function(
       level = level, 
       dilution_stepsize = dilution_stepsize,
       sd = sd,
+      options = options
+    ),
+    "bayesian" = mean_titers_bayesian(
+      titers = titers, 
+      level = level, 
+      dilution_stepsize = dilution_stepsize,
+      prior_mean_mean = prior_mean_mean,
+      prior_mean_sd = prior_mean_sd,
+      prior_sd_shape = prior_sd_shape,
+      prior_sd_scale = prior_sd_scale,
       options = options
     )
   )
@@ -217,3 +231,51 @@ mean_titers_truncated_normal <- function(
   
 }
 
+
+mean_titers_bayesian <- function(
+  titers,
+  level,
+  dilution_stepsize,
+  prior_mean_mean,
+  prior_mean_sd,
+  prior_sd_shape,
+  prior_sd_scale,
+  options
+  ) {
+  
+  # Calculate titer limits
+  titerlims <- calc_titer_lims(titers, dilution_stepsize, options)
+  
+  # Run the optimization
+  result <- optim(
+    par = c(
+      mean(titerlims$log_titers) - 0.5,
+      2
+    ),
+    fn = gmt_bayes_par_negll,
+    method = "BFGS",
+    max_titers = titerlims$max_titers,
+    min_titers = titerlims$min_titers,
+    prior_mean_mean = prior_mean_mean,
+    prior_mean_sd = prior_mean_sd,
+    prior_sd_shape = prior_sd_shape,
+    prior_sd_scale = prior_sd_scale,
+    hessian = TRUE
+  )
+  
+  # Estimate mean variance
+  covariance_matrix <- solve(result$hessian)
+  
+  # Estimate confidence intervals for the mean
+  alpha <- 1 - level
+  mean_sd <- sqrt(covariance_matrix[1, 1])
+  
+  # Give output
+  list(
+    mean = result$par[1],
+    sd = result$par[2],
+    mean_lower = result$par[1] + qnorm(alpha/2)*mean_sd,
+    mean_upper = result$par[1] + qnorm(1 - alpha/2)*mean_sd
+  )
+  
+}

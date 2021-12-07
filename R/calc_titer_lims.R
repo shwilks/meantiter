@@ -67,7 +67,7 @@ calc_titer_lims <- function(
   # Find less than and greater than titers and convert them to a numeric form
   lessthan_titers <- grepl(x = titers, pattern = "<")
   morethan_titers <- grepl(x = titers, pattern = ">")
-  na_titers       <- is.na(titers) | grepl(x = titers, pattern = "\\*")
+  na_titers       <- is.na(titers) | titers == "*" | titers == "."
   
   numeric_titers <- titers
   numeric_titers[na_titers] <- NA

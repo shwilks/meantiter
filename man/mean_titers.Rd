@@ -10,6 +10,10 @@ mean_titers(
   level = 0.95,
   sd = NA,
   dilution_stepsize,
+  prior_mean_mean = 0,
+  prior_mean_sd = 100,
+  prior_sd_shape = 3,
+  prior_sd_scale = 1/4,
   options = list()
 )
 }

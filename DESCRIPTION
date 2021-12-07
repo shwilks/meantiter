@@ -15,6 +15,9 @@ Imports:
   fitdistrplus,
   Hmisc,
   Rcpp (>= 1.0.6)
+LinkingTo:
+  Rcpp,
+  RcppArmadillo
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0)
